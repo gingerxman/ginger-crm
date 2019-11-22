@@ -1,2 +1,2 @@
-# ginger-crm
-CRM service for ginger
+# ginger-account
+account microservice

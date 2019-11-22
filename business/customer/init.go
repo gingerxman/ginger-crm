@@ -1,0 +1,4 @@
+package customer
+
+func init() {
+}
