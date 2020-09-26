@@ -12,6 +12,7 @@ func init() {
 	eel.RegisterResource(&console.Console{})
 	eel.RegisterResource(&op.Health{})
 	
+	eel.RegisterResource(&customer.Customer{})
 	eel.RegisterResource(&customer.Customers{})
 	
 	eel.RegisterResource(&dev.BDDReset{})

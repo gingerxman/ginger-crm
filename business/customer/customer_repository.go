@@ -2,6 +2,7 @@ package customer
 
 import (
 	"context"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gingerxman/eel"
 	"github.com/gingerxman/ginger-crm/business"
 	m_customer "github.com/gingerxman/ginger-crm/models/customer"
@@ -47,6 +48,9 @@ func (this *CustomerRepository) GetPagedCustomers(filters eel.Map, page *eel.Pag
 	
 	var models []*m_customer.Customer
 	db := o.Model(&m_customer.Customer{})
+	if len(filters) > 0 {
+		db = db.Where(filters)
+	}
 	for _, expr := range orderExprs {
 		db = db.Order(expr)
 	}
@@ -68,6 +72,34 @@ func (this *CustomerRepository) GetPagedCustomers(filters eel.Map, page *eel.Pag
 func (this *CustomerRepository) GetPagedCustomersForCorp(corp business.ICorp, filters eel.Map, page *eel.PageInfo) ([]*Customer, eel.INextPageInfo) {
 	filters["corp_id"] = corp.GetId()
 	return this.GetPagedCustomers(filters, page, "-id")
+}
+
+func (this *CustomerRepository) GetCustomerByIdInCorp(corp business.ICorp, customerId int) *Customer {
+	filters := eel.Map{
+		"corp_id": corp.GetId(),
+		"id": customerId,
+	}
+	
+	customers := this.GetCustomers(filters)
+	if len(customers) > 0 {
+		return customers[0]
+	} else {
+		return nil
+	}
+}
+
+func (this *CustomerRepository) GetCustomerByUserIdInCorp(corp business.ICorp, user business.IUser) *Customer {
+	filters := eel.Map{
+		"corp_id": corp.GetId(),
+		"user_id": user.GetId(),
+	}
+	
+	customers := this.GetCustomers(filters)
+	if len(customers) > 0 {
+		return customers[0]
+	} else {
+		return nil
+	}
 }
 
 func init() {

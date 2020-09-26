@@ -17,7 +17,7 @@ func NewEncodeCustomerService(ctx context.Context) *EncodeCustomerService {
 
 func (this *EncodeCustomerService) Encode(customer *Customer) *RCustomer {
 	consumptionRecord := customer.ConsumptionRecord
-	return &RCustomer{
+	rCustomer := &RCustomer{
 		Id: customer.Id,
 		UserId: customer.UserId,
 		Unionid: customer.Unionid,
@@ -32,6 +32,8 @@ func (this *EncodeCustomerService) Encode(customer *Customer) *RCustomer {
 		ConsumeMoney: consumptionRecord.ConsumeMoney,
 		LatestConsumeTime: consumptionRecord.LatestConsumeTime,
 	}
+	
+	return rCustomer
 }
 
 func (this *EncodeCustomerService) EncodeMany(customers []*Customer) []*RCustomer {

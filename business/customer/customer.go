@@ -37,32 +37,48 @@ type Customer struct {
 }
 
 func NewCustomerForCorp(ctx context.Context, userIface business.IUser, corp business.ICorp) (*Customer, error) {
-	user := account.NewUserRepository(ctx).GetUserById(userIface.GetId())
-	
-	if user == nil {
-		return nil, errors.New("customer:fetch_user_fail")
-	}
-	
 	o := eel.GetOrmFromContext(ctx)
-	
-	model := &m_customer.Customer{
-		UserId: user.Id,
-		CorpId: corp.GetId(),
-		Unionid: user.Unionid,
-		Code: user.Code,
-		Name: user.Name,
-		Avatar: user.Avatar,
-		Sex: user.Sex,
-		Source: user.Source,
+	if o.Model(&m_customer.Customer{}).Where(eel.Map{
+		"corp_id": corp.GetId(),
+		"user_id": userIface.GetId(),
+	}).Exist() {
+		var model m_customer.Customer
+		db := o.Model(&m_customer.Customer{}).Where(eel.Map{
+			"corp_id": corp.GetId(),
+			"user_id": userIface.GetId(),
+		}).Find(&model)
+		
+		if db.Error != nil {
+			return nil, db.Error
+		} else {
+			return NewCustomerFromModel(ctx, &model), nil
+		}
+	} else {
+		user := account.NewUserRepository(ctx).GetUserById(userIface.GetId())
+		
+		if user == nil {
+			return nil, errors.New("customer:fetch_user_fail")
+		}
+		
+		model := &m_customer.Customer{
+			UserId: user.Id,
+			CorpId: corp.GetId(),
+			Unionid: user.Unionid,
+			Code: user.Code,
+			Name: user.Name,
+			Avatar: user.Avatar,
+			Sex: user.Sex,
+			Source: user.Source,
+		}
+		
+		db := o.Create(model)
+		if db.Error != nil {
+			eel.Logger.Error(db.Error)
+			return nil, db.Error
+		}
+		
+		return NewCustomerFromModel(ctx, model), nil
 	}
-	
-	db := o.Create(model)
-	if db.Error != nil {
-		eel.Logger.Error(db.Error)
-		return nil, db.Error
-	}
-	
-	return NewCustomerFromModel(ctx, model), nil
 }
 
 func NewCustomerFromModel(ctx context.Context, model *m_customer.Customer) *Customer {
@@ -78,6 +94,7 @@ func NewCustomerFromModel(ctx context.Context, model *m_customer.Customer) *Cust
 	instance.Avatar = model.Avatar
 	instance.Sex = model.Sex
 	instance.Source = model.Source
+	instance.ConsumptionRecord = &consumptionRecord{}
 	
 	return instance
 }
