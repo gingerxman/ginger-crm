@@ -2,7 +2,7 @@
 	"name": "github.com/gingerxman/ginger-account",
 	"type": "golang-service",
 	"golang_type": "eel",
-	"default_port": 3131,
+	"default_port": 3134,
 	"envs": {
 		"production": [
 			"_SERVICE_HOST_PORT",

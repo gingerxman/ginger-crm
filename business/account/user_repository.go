@@ -28,6 +28,7 @@ func (this *UserRepository) makeUsers(userDatas []interface{}) []*User {
 		user.Avatar = userJson["avatar"].(string)
 		user.Sex = userJson["sex"].(string)
 		user.Code = userJson["code"].(string)
+		user.Source = userJson["source"].(string)
 		
 		users = append(users, user)
 	}
@@ -53,49 +54,15 @@ func (this *UserRepository) GetUsers(ids []int) []*User {
 	return this.makeUsers(userDatas.MustArray())
 }
 
-//func (this *UserRepository) GetUsersByCodes(codes []string) []*User {
-//	resp, err := eel.NewResource(this.Ctx).Get("gskep", "account.users", eel.Map{
-//		"codes": eel.ToJsonString(codes),
-//	})
-//
-//	if err != nil {
-//		eel.Logger.Error(err)
-//		return nil
-//	}
-//
-//	respData := resp.Data()
-//	userDatas := respData.Get("users")
-//	return this.makeUsers(userDatas.MustArray())
-//}
-//
-//func (this *UserRepository) GetUsersByUnionids(unionids []string) []*User {
-//	resp, err := eel.NewResource(this.Ctx).Get("gskep", "account.users", eel.Map{
-//		"unionids": eel.ToJsonString(unionids),
-//	})
-//
-//	if err != nil {
-//		eel.Logger.Error(err)
-//		return nil
-//	}
-//
-//	respData := resp.Data()
-//	userDatas := respData.Get("users")
-//	return this.makeUsers(userDatas.MustArray())
-//}
-//
-//func (this *UserRepository) GetUserByCorpUserId(corpUserId int) *User {
-//	resp, err := eel.NewResource(this.Ctx).Get("gskep", "account.user", eel.Map{
-//		"corp_user_id": corpUserId,
-//	})
-//
-//	if err != nil {
-//		eel.Logger.Error(err)
-//		return nil
-//	}
-//
-//	userData := resp.Data().MustMap()
-//	return this.makeUsers([]interface{}{userData})[0]
-//}
+func (this *UserRepository) GetUserById(id int) *User {
+	users := this.GetUsers([]int{id})
+	
+	if len(users) > 0 {
+		return users[0]
+	} else {
+		return nil
+	}
+}
 
 func init() {
 }

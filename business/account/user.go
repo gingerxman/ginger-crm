@@ -18,6 +18,7 @@ type User struct {
 	Avatar            string
 	Sex               string
 	Code              string
+	Source string
 	RawData           *simplejson.Json
 	CreatedAt         time.Time
 }

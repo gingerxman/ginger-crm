@@ -2,9 +2,9 @@ package customer
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gingerxman/eel"
-	"github.com/gingerxman/ginger-crm/business/account"
+	"github.com/gingerxman/ginger-crm/business"
+	m_customer "github.com/gingerxman/ginger-crm/models/customer"
 )
 
 type CustomerRepository struct {
@@ -17,53 +17,57 @@ func NewCustomerRepository(ctx context.Context) *CustomerRepository {
 	return service
 }
 
-func (this *CustomerRepository) makeUser(userData interface{}) *account.User {
-	userJson := userData.(map[string]interface{})
-	id, _ := userJson["id"].(json.Number).Int64()
-	user := account.NewUserFromOnlyId(this.Ctx, int(id))
-	user.Name = userJson["name"].(string)
-	user.Avatar = userJson["avatar"].(string)
-	user.Sex = userJson["sex"].(string)
-	user.Code = userJson["code"].(string)
+func (this *CustomerRepository) GetCustomers(filters eel.Map, orderExprs ...string) []*Customer {
+	o := eel.GetOrmFromContext(this.Ctx)
 	
-	return user
-}
-
-func (this *CustomerRepository) makeCustomers(consumptionRecordDatas []interface{}) []*Customer {
-	customers := make([]*Customer, 0)
-	for _, recordData := range consumptionRecordDatas {
-		recordData := recordData.(map[string]interface{})
-		
-		user := this.makeUser(recordData["user"])
-		
-		record := &consumptionRecord{}
-		count, _ := recordData["consume_count"].(json.Number).Int64()
-		record.ConsumeCount = int(count)
-		money, _ := recordData["consume_money"].(json.Number).Int64()
-		record.ConsumeMoney = int(money)
-		record.LatestConsumeTime = recordData["latest_consume_time"].(string)
-		
-		customers = append(customers, &Customer{
-			User: user,
-			ConsumptionRecord: record,
-		})
+	var models []*m_customer.Customer
+	db := o.Model(&m_customer.Customer{})
+	if len(filters) > 0 {
+		db = db.Where(filters)
+	}
+	for _, expr := range orderExprs {
+		db = db.Order(expr)
+	}
+	db = db.Find(&models)
+	
+	if db.Error != nil {
+		eel.Logger.Error(db.Error)
+		return make([]*Customer, 0)
 	}
 	
-	return customers
+	instances := make([]*Customer, 0)
+	for _, model := range models {
+		instances = append(instances, NewCustomerFromModel(this.Ctx, model))
+	}
+	return instances
 }
 
-func (this *CustomerRepository) GetByConsumptionRecord() []*Customer {
-	resp, err := eel.NewResource(this.Ctx).Get("ginger-mall", "consumption.user_consumption_records", eel.Map{
-	})
-
-	if err != nil {
-		eel.Logger.Error(err)
-		return nil
+func (this *CustomerRepository) GetPagedCustomers(filters eel.Map, page *eel.PageInfo, orderExprs ...string) ([]*Customer, eel.INextPageInfo) {
+	o := eel.GetOrmFromContext(this.Ctx)
+	
+	var models []*m_customer.Customer
+	db := o.Model(&m_customer.Customer{})
+	for _, expr := range orderExprs {
+		db = db.Order(expr)
 	}
+	
+	paginateResult, db := eel.Paginate(db, page, &models)
+	
+	if db.Error != nil {
+		eel.Logger.Error(db.Error)
+		return nil, paginateResult
+	}
+	
+	instances := make([]*Customer, 0)
+	for _, model := range models {
+		instances = append(instances, NewCustomerFromModel(this.Ctx, model))
+	}
+	return instances, paginateResult
+}
 
-	respData := resp.Data()
-	recordDatas := respData.Get("records")
-	return this.makeCustomers(recordDatas.MustArray())
+func (this *CustomerRepository) GetPagedCustomersForCorp(corp business.ICorp, filters eel.Map, page *eel.PageInfo) ([]*Customer, eel.INextPageInfo) {
+	filters["corp_id"] = corp.GetId()
+	return this.GetPagedCustomers(filters, page, "-id")
 }
 
 func init() {

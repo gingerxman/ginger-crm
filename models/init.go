@@ -9,6 +9,7 @@ import (
 	"github.com/gingerxman/eel"
 	"github.com/gingerxman/eel/config"
 	_ "github.com/gingerxman/ginger-crm/models/point"
+	_ "github.com/gingerxman/ginger-crm/models/customer"
 )
 
 var Db *gorm.DB

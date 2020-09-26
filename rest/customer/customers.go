@@ -1,9 +1,9 @@
 package customer
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gingerxman/eel"
+	"github.com/gingerxman/ginger-crm/business/account"
 	"github.com/gingerxman/ginger-crm/business/customer"
 )
 
@@ -31,16 +31,17 @@ func (this *Customers) Get(ctx *eel.Context) {
 	fmt.Println(filters)
 	fmt.Println(pageInfo)
 	
-	// corp := account.GetCorpFromContext(bCtx)
-	customers := customer.NewCustomerRepository(bCtx).GetByConsumptionRecord()
+	corp := account.GetCorpFromContext(bCtx)
+	customers, nextPageInfo := customer.NewCustomerRepository(bCtx).GetPagedCustomersForCorp(corp, filters, pageInfo)
 	
-	datas := customer.NewEncodeCustomerService(bCtx).EncodeManyLintCustomers(customers)
+	customer.NewFillCustomerService(bCtx).Fill(customers, eel.FillOption{
+		"with_consumption_record": true,
+	})
+	datas := customer.NewEncodeCustomerService(bCtx).EncodeMany(customers)
 
-	bytes, _ := json.Marshal(datas)
-	fmt.Println(string(bytes))
 	ctx.Response.JSON(eel.Map{
 		"customers": datas,
-		"pageinfo": nil, // nextPageInfo.ToMap(),
+		"pageinfo": nextPageInfo.ToMap(),
 	})
 }
 

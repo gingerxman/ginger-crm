@@ -34,6 +34,8 @@ func (this *BDDReset) Put(ctx *eel.Context) {
 	o.Exec("delete from point_rule_has_product")
 	o.Exec("delete from point_rule")
 	
+	o.Exec("delete from customer_customer")
+	
 	ctx.Response.JSON(eel.Map{})
 }
 
