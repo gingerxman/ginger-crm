@@ -30,7 +30,6 @@ func (this *BDDReset) Put(ctx *eel.Context) {
 	bCtx := ctx.GetBusinessContext()
 	o := eel.GetOrmFromContext(bCtx)
 	
-	o.Exec("delete from point_system_rule")
 	o.Exec("delete from point_rule_has_product")
 	o.Exec("delete from point_rule")
 	

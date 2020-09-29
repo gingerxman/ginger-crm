@@ -1,0 +1,4 @@
+package point
+
+func init() {
+}

@@ -1,6 +1,6 @@
 Feature: 创建客户
 
-@ginger-crm @customer @wip
+@ginger-crm @customer
 Scenario: 用户登录创建客户
 	Given ginger登录系统
 	When ginger创建公司
