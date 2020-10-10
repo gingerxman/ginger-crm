@@ -82,7 +82,6 @@ func (this *PointRuleFactory) InitSystemRulesForCorp(corp business.ICorp) {
 func (this *PointRuleFactory) CreateRuleForCorp(corp business.ICorp, name string, ruleType string, data interface{}, point int) (*PointRule, error){
 	o := eel.GetOrmFromContext(this.Ctx)
 	
-	// 积分有效期
 	model := &m_point.PointRule{
 		Type: m_point.PR__STR2TYPE[ruleType],
 		Stage: m_point.PR__TYPE2STAGE[ruleType],
@@ -91,6 +90,7 @@ func (this *PointRuleFactory) CreateRuleForCorp(corp business.ICorp, name string
 		Detail: "",
 		Data: eel.ToJsonString(data),
 		Point: point,
+		IsForAllProduct: true,
 		IsSystemRule: false,
 		IsEnabled: true,
 		IsDeleted: false,

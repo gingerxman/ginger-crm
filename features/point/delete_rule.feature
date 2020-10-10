@@ -13,7 +13,7 @@ Feature: 更新积分规则
 		}]
 		"""
 
-	@ginger-crm @point @wip
+	@ginger-crm @point
 	Scenario: 商户删除积分规则
 
 		# jobs初始验证

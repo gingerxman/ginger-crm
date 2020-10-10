@@ -3,7 +3,6 @@ package customer
 import (
 	"context"
 	"encoding/json"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/gingerxman/eel"
 )
 
@@ -46,7 +45,6 @@ func (this *FillCustomerService) fillConsumptionRecord(customers []*Customer, id
 	resp, err := eel.NewResource(this.Ctx).Get("ginger-order", "consumption.user_consumption_records", eel.Map{
 		"user_ids": eel.ToJsonString(userIds),
 	})
-	spew.Dump(resp)
 	
 	if err != nil {
 		eel.Logger.Error(err)

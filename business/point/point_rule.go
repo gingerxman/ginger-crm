@@ -29,6 +29,7 @@ type PointRule struct {
 	Data map[string]interface{} // 规则业务数据
 	Point int // 奖励积分值
 	
+	IsForAllProduct bool
 	IsSystemRule bool
 	IsEnabled  bool
 	IsDeleted  bool
@@ -44,9 +45,11 @@ func (this *PointRule) GetStageText() string {
 	return m_point.PR__STAGE2STR[this.Stage]
 }
 
-func (this *PointRule) Update(data interface{}, point int) {
+func (this *PointRule) Update(ruleType string, data interface{}, point int) {
 	o := eel.GetOrmFromContext(this.Ctx)
 	db := o.Model(&m_point.PointRule{}).Where("id", this.Id).Update(gorm.Params{
+		"type": m_point.PR__STR2TYPE[ruleType],
+		"stage": m_point.PR__TYPE2STAGE[ruleType],
 		"data": eel.ToJsonString(data),
 		"point": point,
 		"updated_at": time.Now(),
@@ -76,6 +79,49 @@ func (this *PointRule) Delete() error {
 	}
 	
 	return nil
+}
+
+func (this *PointRule) IsPreconditionRule() bool {
+	if this.Stage == m_point.PR_STAGE_PRECONDITION || this.Stage == m_point.PR_STAGE_ALL {
+		return true
+	}
+	
+	return false
+}
+
+func (this *PointRule) IsOutputRule() bool {
+	if this.Stage == m_point.PR_STAGE_OUTPUT || this.Stage == m_point.PR_STAGE_ALL {
+		return true
+	}
+	
+	return false
+}
+
+func (this *PointRule) IsMaxPerDayRule() bool {
+	return this.Type == m_point.PR_TYPE_MAX_PER_DAY
+}
+
+func (this *PointRule) IsTradeRule() bool {
+	return this.Type == m_point.PR_TYPE_TRADE
+}
+
+func (this *PointRule) IsActive() bool {
+	if (this.Type == m_point.PR_TYPE_MONEY || this.Type == m_point.PR_TYPE_TRADE) {
+		return true
+	} else {
+		// 系统规则，都检查data中是否有count存在
+		data, ok := this.Data["count"]
+		if !ok {
+			return false
+		}
+		
+		count := int(data.(float64))
+		if count == 0 {
+			return false
+		} else {
+			return true
+		}
+	}
 }
 
 func InitSystemRulesForCorp(ctx context.Context, corp business.ICorp) {
@@ -159,6 +205,7 @@ func NewPointRuleFromModel(ctx context.Context, model *m_point.PointRule) *Point
 	}
 	instance.Data = data
 	
+	instance.IsForAllProduct = model.IsForAllProduct
 	instance.IsSystemRule = model.IsSystemRule
 	instance.IsEnabled = model.IsEnabled
 	instance.IsDeleted = model.IsDeleted

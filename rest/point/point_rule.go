@@ -27,6 +27,7 @@ func (this *PointRule) GetParameters() map[string][]string {
 		},
 		"POST": []string{
 			"id:int",
+			"type",
 			"data:json",
 			"point:int",
 		},
@@ -97,9 +98,10 @@ func (this *PointRule) Post(ctx *eel.Context) {
 	}
 	
 	
+	ruleType := req.GetString("type")
 	data := req.GetJSON("data")
 	point, _ := req.GetInt("point", 0)
-	rule.Update(data, point)
+	rule.Update(ruleType, data, point)
 	
 	ctx.Response.JSON(eel.Map{})
 }

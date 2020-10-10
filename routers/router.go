@@ -21,6 +21,7 @@ func init() {
 	// point
 	eel.RegisterResource(&point.PointRule{})
 	eel.RegisterResource(&point.PointRules{})
+	eel.RegisterResource(&point.FinishedOrder{})
 	
 	// system
 	eel.RegisterResource(&system.SystemInit{})

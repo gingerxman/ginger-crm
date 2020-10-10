@@ -19,3 +19,15 @@ type RPointRule struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
+
+type RPointLog struct {
+	Id int `json:"id"`
+	UserId int `json:"user_id"`
+	CorpId int `json:"corp_id"`
+	Point int `json:"point"'`
+	
+	User interface{} `json:"user"`
+	Data interface{} `json:"data"`
+	
+	CreatedAt string `json:"created_at"`
+}
